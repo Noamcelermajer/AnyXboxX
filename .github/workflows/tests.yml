@@ -72,6 +72,10 @@ jobs:
       # Cache des dépendances compilées des deux espaces Cargo (rust/ et TomBox), sans nos propres
       # crates. Écrit seulement depuis main pour ne pas multiplier les gros caches de PR ; les PR
       # le lisent.
+      # Version de Rust épinglée à la racine (rust-toolchain.toml, comme VIctory) : installée
+      # avant tout appel à cargo, pour rust/, TomBox et l'espace racine.
+      - name: Rust épinglé (rust-toolchain.toml)
+        run: rustup toolchain install
       - name: Cache Rust (rust/ et third_party/tombox)
         uses: Swatinem/rust-cache@v2
         with:
