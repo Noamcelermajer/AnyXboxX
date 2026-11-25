@@ -25,6 +25,7 @@ victory-pe = { path = "third_party/victory/crates/victory-pe" }
 
 # Same versions as VIctory's workspace, so both share one set of downloaded crates.
 thiserror = "2.0.21"
+clap = { version = "4.6.9", features = ["derive"] }
 
 # Ported AnyXboxX crates.
 anyxboxx-pe = { path = "crates/anyxboxx-pe" }
