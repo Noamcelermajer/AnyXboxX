@@ -69,28 +69,23 @@ jobs:
         run: |
           cmake -S runtime -B runtime/build -A x64
           cmake --build runtime/build --config Release
-      # Cache des dépendances compilées des deux espaces Cargo (rust/ et TomBox), sans nos propres
-      # crates. Écrit seulement depuis main pour ne pas multiplier les gros caches de PR ; les PR
-      # le lisent.
       # Version de Rust épinglée à la racine (rust-toolchain.toml, comme VIctory) : installée
-      # avant tout appel à cargo, pour rust/, TomBox et l'espace racine.
+      # avant tout appel à cargo, pour TomBox et l'espace racine.
       - name: Rust épinglé (rust-toolchain.toml)
         run: rustup toolchain install
-      - name: Cache Rust (rust/ et third_party/tombox)
+      # Cache des dépendances compilées des deux espaces Cargo (racine et TomBox), sans nos propres
+      # crates. Écrit seulement depuis main pour ne pas multiplier les gros caches de PR ; les PR
+      # le lisent.
+      - name: Cache Rust (racine et third_party/tombox)
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: |
             . -> target
-            rust -> target
             third_party/tombox -> target
           cache-on-failure: true
           save-if: ${{ github.ref == 'refs/heads/main' }}
-      - name: Rust (passerelle vers TomBox)
-        run: |
-          cargo build --release --manifest-path rust/Cargo.toml
-          cargo test --release --manifest-path rust/Cargo.toml
-      # Espace Cargo racine (crates/, docs/architecture-rust.md) : ses tests Rust, et les binaires
-      # que les tests de parité avec Python lancent (tests/test_rust_pe_parity.py).
+      # Espace Cargo racine (crates/, docs/architecture-rust.md), passerelle vers TomBox comprise :
+      # ses tests Rust, et les binaires que les tests de parité avec Python lancent.
       - name: Rust (espace racine, crates/)
         run: |
           cargo build --release --workspace

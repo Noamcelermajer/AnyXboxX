@@ -4,7 +4,7 @@
 
 [Xbox2Windows](https://github.com/R0Y00/Xbox2Windows) (R0Y00, licence MIT) étudie la recompilation statique de logiciels Xbox Series X|S vers Windows x64 : fonctions CPU traduites en C++ puis en DLL Windows, shaders de pixels gfx1013 traduits en HLSL, textures BC7 récupérées et affichées, état de scripts rejoué. Chaque résultat est vérifié sur GPU matériel et sur WARP, et un banc GPU communautaire couvre plus de 40 cartes. État relevé le 21 novembre 2026 (commit `18d57d9`).
 
-## Repris dans AnyXboxX (en Rust, `rust/anyxboxx-texture`)
+## Repris dans AnyXboxX (en Rust, `crates/anyxboxx-texture`)
 
 | Élément | Leur source | Notre portage | Vérification |
 | --- | --- | --- | --- |

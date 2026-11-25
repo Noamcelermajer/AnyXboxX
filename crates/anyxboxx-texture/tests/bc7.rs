@@ -18,7 +18,7 @@ fn block(fields: &[(u128, u32)]) -> Vec<u8> {
 }
 
 fn texels(data: &[u8]) -> Vec<[u8; 4]> {
-    data.chunks_exact(4).map(|c| [c[0], c[1], c[2], c[3]]).collect()
+    data.as_chunks::<4>().0.iter().map(|c| [c[0], c[1], c[2], c[3]]).collect()
 }
 
 fn random_block(mode: usize, case: usize) -> Vec<u8> {

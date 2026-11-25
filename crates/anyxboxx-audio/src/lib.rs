@@ -145,7 +145,7 @@ mod tests {
     fn garbage_packets_decode_without_crash() {
         let format = Xma2Format { channels: 1, sample_rate: 44_100, streams: 1 };
         let samples = decode(format, &[0xA5; PACKET_BYTES * 2]).unwrap();
-        assert!(samples.len() % format.channels as usize == 0);
+        assert!(samples.len().is_multiple_of(format.channels as usize));
     }
 
     #[test]

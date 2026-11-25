@@ -2,6 +2,8 @@
 //!
 //! Le décodage BC7 et le désentrelacement sont portés de Xbox2Windows (R0Y00, licence MIT,
 //! <https://github.com/R0Y00/Xbox2Windows>, `tools/bc7_blocks.py` et `tools/bc7_tiles.py`).
+// Same allowance as VIctory's workspace: the chunk sizes are computed constants.
+#![allow(clippy::chunks_exact_to_as_chunks)]
 pub mod bc7;
 pub mod png;
 pub mod tiles;

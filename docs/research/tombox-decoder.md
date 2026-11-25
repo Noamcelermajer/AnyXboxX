@@ -2,7 +2,7 @@
 
 # TomBox RDNA 2 decoder checked against the LLVM tests
 
-Report produced by `tools/compare_tombox.py` (Rust bridge `rust/anyxboxx-rdna2`) on the unique encodings of LLVM's public tests (gfx10, gfx1030), with `tombox-xshader` at commit `fef9a6e` of omonkeyz/xbox-emulator. "Unknown to TomBox": opcode missing from their mnemonic table (shown as `family<0x…>`). The name differences `v_mad_legacy`/`v_mac_legacy` and `v_mac_f16` come from the gfx1010 names (RDNA 1); LLVM gfx1030 (RDNA 2) uses the `fma`/`fmac` names. The FLAT/GLOBAL/SCRATCH differences come from the segment (bits 15-14), which is not part of the name.
+Report produced by `tools/compare_tombox.py` (Rust bridge `crates/anyxboxx-rdna2`) on the unique encodings of LLVM's public tests (gfx10, gfx1030), with `tombox-xshader` at commit `fef9a6e` of omonkeyz/xbox-emulator. "Unknown to TomBox": opcode missing from their mnemonic table (shown as `family<0x…>`). The name differences `v_mad_legacy`/`v_mac_legacy` and `v_mac_f16` come from the gfx1010 names (RDNA 1); LLVM gfx1030 (RDNA 2) uses the `fma`/`fmac` names. The FLAT/GLOBAL/SCRATCH differences come from the segment (bits 15-14), which is not part of the name.
 
 | Family | Encodings | Identical | Wrong length | Different name | Unknown to TomBox |
 |---|---:|---:|---:|---:|---:|

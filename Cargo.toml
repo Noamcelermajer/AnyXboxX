@@ -1,16 +1,15 @@
 # AnyXboxX root Cargo workspace: the target of the move to 100 % Rust (docs/architecture-rust.md).
 #
-# New crates go in crates/. Three trees keep their own workspace for now and are excluded here,
-# because Cargo refuses a package that two workspaces claim, and a package excluded by its own
-# workspace (VIctory's tests/fixtures) would otherwise climb up to this one:
-# - rust/          : moves into crates/ in phase 1, then rust/Cargo.toml is deleted;
+# Every AnyXboxX crate is in crates/ (rust/ was merged in phase 1). Two trees keep their own
+# workspace and are excluded here, because Cargo refuses a package that two workspaces claim, and a
+# package excluded by its own workspace (VIctory's tests/fixtures) would otherwise climb up to this one:
 # - third_party/   : VIctory (its own toolchain pin and lints) and the TomBox submodule; our crates
 #                    depend on VIctory's crates by path instead of re-declaring them as members;
 # - .claude/       : Claude Code worktrees, which hold full checkouts of this repository.
 [workspace]
 resolver = "3"
 members = ["crates/*"]
-exclude = ["rust", "third_party", ".claude"]
+exclude = ["third_party", ".claude"]
 
 [workspace.package]
 version = "0.1.0"

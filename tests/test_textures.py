@@ -1,4 +1,4 @@
-"""Textures console en Rust (rust/anyxboxx-texture, portage du décodeur BC7 de Xbox2Windows, MIT) :
+"""Textures console en Rust (crates/anyxboxx-texture, portage du décodeur BC7 de Xbox2Windows, MIT) :
 la ligne de commande écrit un PNG que Python relit indépendamment (zlib, CRC)."""
 import struct
 import subprocess
@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-BINARY = Path(__file__).resolve().parents[1] / "rust" / "target" / "release" / "anyxboxx_texture.exe"
+BINARY = Path(__file__).resolve().parents[1] / "target" / "release" / "anyxboxx_texture.exe"
 pytestmark = pytest.mark.skipif(not BINARY.is_file(), reason="crate Rust non compilée (cargo build --release)")
 
 

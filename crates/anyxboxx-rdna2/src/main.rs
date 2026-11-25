@@ -10,7 +10,7 @@ use tombox_xshader::rdna2::disassemble;
 
 fn parse_hex(line: &str) -> Option<Vec<u8>> {
     let digits: String = line.chars().filter(|c| c.is_ascii_hexdigit()).collect();
-    if digits.is_empty() || digits.len() % 2 != 0 {
+    if digits.is_empty() || !digits.len().is_multiple_of(2) {
         return None;
     }
     (0..digits.len()).step_by(2).map(|i| u8::from_str_radix(&digits[i..i + 2], 16).ok()).collect()

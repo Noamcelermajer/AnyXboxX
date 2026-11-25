@@ -126,11 +126,12 @@ def test_rust_loader_matches_python(binary, tmp_path, make, base, expected):
 
 
 def test_root_workspace_leaves_the_other_workspaces_alone():
-    """Cargo refuses a crate claimed by two workspaces : rust/ and third_party/ keep their own."""
+    """Cargo refuses a crate claimed by two workspaces: third_party/ keeps its own; rust/ is merged."""
     import tomllib
 
     manifest = tomllib.loads((REPO / "Cargo.toml").read_text(encoding="utf-8"))
     workspace = manifest["workspace"]
-    assert {"rust", "third_party", ".claude"} <= set(workspace["exclude"])
+    assert {"third_party", ".claude"} <= set(workspace["exclude"])
+    assert not (REPO / "rust" / "Cargo.toml").exists()
     assert workspace["members"] == ["crates/*"]
     assert (REPO / "crates" / "anyxboxx-pe" / "Cargo.toml").is_file()

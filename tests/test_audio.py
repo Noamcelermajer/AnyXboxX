@@ -1,4 +1,4 @@
-"""Son console (rust/anyxboxx-audio) : un fichier RIFF XMA2 passe par le décodeur de TomBox (portage
+"""Son console (crates/anyxboxx-audio) : un fichier RIFF XMA2 passe par le décodeur de TomBox (portage
 Rust de FFmpeg) et ressort en WAV PCM 16 bits relisible par le module wave de Python."""
 import struct
 import subprocess
@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-BINARY = Path(__file__).resolve().parents[1] / "rust" / "target" / "release" / "anyxboxx_xma.exe"
+BINARY = Path(__file__).resolve().parents[1] / "target" / "release" / "anyxboxx_xma.exe"
 pytestmark = pytest.mark.skipif(not BINARY.is_file(), reason="crate Rust non compilée (cargo build --release)")
 XMA2 = 0x0166
 

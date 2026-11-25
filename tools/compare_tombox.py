@@ -1,11 +1,11 @@
-"""Confronte le désassembleur RDNA 2 de TomBox (tombox-xshader, via rust/anyxboxx_rdna2) aux
+"""Confronte le désassembleur RDNA 2 de TomBox (tombox-xshader, via crates/anyxboxx-rdna2) aux
 encodages publics des tests de LLVM, comme le décodeur d'AnyXboxX (tools/rdna2_mnemonics.py).
 
 Pour chaque encodage : longueur (mots de 32 bits) et mnémonique de TomBox comparés à LLVM.
 Le rapport classe les écarts par famille ; les mnémoniques inconnus de TomBox (« vop3<0x…> »)
 sont comptés à part.
 
-    cargo build --release --manifest-path rust/Cargo.toml
+    cargo build --release
     python tools/compare_tombox.py <dossier des .s LLVM> [--md rapport.md]
 """
 import re
@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 from rdna2_mnemonics import llvm_lines  # noqa: E402
 
-BINARY = ROOT / "rust" / "target" / "release" / "anyxboxx_rdna2.exe"
+BINARY = ROOT / "target" / "release" / "anyxboxx_rdna2.exe"
 SUFFIX = re.compile(r"_(e32|e64|sdwa|dpp|dpp8)$")
 UNKNOWN = re.compile(r"^[a-z0-9]+<")
 MAX_EXAMPLES = 3
@@ -81,7 +81,7 @@ def main(argv):
         print(__doc__)
         return 2
     if not BINARY.is_file():
-        print(f"Binaire absent : {BINARY}. Lancez cargo build --release --manifest-path rust/Cargo.toml",
+        print(f"Binaire absent : {BINARY}. Lancez cargo build --release",
               file=sys.stderr)
         return 1
     text = report(*compare(argv[0]))
