@@ -14,8 +14,11 @@ pub fn decode_surface(blocks: &[u8], width: usize, height: usize) -> Result<Vec<
     const PIXEL_BYTES: usize = 4;
     let (columns, rows) = (width.div_ceil(SIDE), height.div_ceil(SIDE));
     if blocks.len() != columns * rows * bc7::BLOCK_BYTES {
-        return Err(format!("{} octets reçus, {} attendus pour {width}×{height}", blocks.len(),
-                           columns * rows * bc7::BLOCK_BYTES));
+        return Err(format!(
+            "{} octets reçus, {} attendus pour {width}×{height}",
+            blocks.len(),
+            columns * rows * bc7::BLOCK_BYTES
+        ));
     }
     let mut image = vec![0u8; width * height * PIXEL_BYTES];
     if blocks.is_empty() {
@@ -30,7 +33,11 @@ pub fn decode_surface(blocks: &[u8], width: usize, height: usize) -> Result<Vec<
             let x = block_x * SIDE;
             let visible_bytes = (width - x).min(SIDE) * PIXEL_BYTES;
             let start = y * stride + x * PIXEL_BYTES;
-            for (dy, row) in texels.chunks_exact(SIDE * PIXEL_BYTES).take(visible_rows).enumerate() {
+            for (dy, row) in texels
+                .chunks_exact(SIDE * PIXEL_BYTES)
+                .take(visible_rows)
+                .enumerate()
+            {
                 let at = start + dy * stride;
                 image[at..at + visible_bytes].copy_from_slice(&row[..visible_bytes]);
             }

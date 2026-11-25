@@ -9,7 +9,11 @@ fn crc32(parts: &[&[u8]]) -> u32 {
     for byte in parts.iter().flat_map(|part| part.iter()) {
         crc ^= *byte as u32;
         for _ in 0..8 {
-            crc = if crc & 1 != 0 { (crc >> 1) ^ 0xEDB8_8320 } else { crc >> 1 };
+            crc = if crc & 1 != 0 {
+                (crc >> 1) ^ 0xEDB8_8320
+            } else {
+                crc >> 1
+            };
         }
     }
     !crc

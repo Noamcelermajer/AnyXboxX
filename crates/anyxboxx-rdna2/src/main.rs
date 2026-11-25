@@ -13,7 +13,10 @@ fn parse_hex(line: &str) -> Option<Vec<u8>> {
     if digits.is_empty() || !digits.len().is_multiple_of(2) {
         return None;
     }
-    (0..digits.len()).step_by(2).map(|i| u8::from_str_radix(&digits[i..i + 2], 16).ok()).collect()
+    (0..digits.len())
+        .step_by(2)
+        .map(|i| u8::from_str_radix(&digits[i..i + 2], 16).ok())
+        .collect()
 }
 
 fn describe(bytes: &[u8]) -> String {
@@ -30,7 +33,8 @@ fn main() -> io::Result<()> {
     let mut out = BufWriter::new(io::stdout().lock());
     for line in stdin.lock().lines() {
         let line = line?;
-        let text = parse_hex(&line).map_or_else(|| "0 erreur -".to_string(), |bytes| describe(&bytes));
+        let text =
+            parse_hex(&line).map_or_else(|| "0 erreur -".to_string(), |bytes| describe(&bytes));
         writeln!(out, "{text}")?;
     }
     out.flush()

@@ -26,7 +26,9 @@ pub struct Xma2File<'a> {
 }
 
 fn u16_at(b: &[u8], offset: usize) -> Result<u16, String> {
-    b.get(offset..offset + 2).map(|s| u16::from_le_bytes([s[0], s[1]])).ok_or_else(|| "fichier tronqué".into())
+    b.get(offset..offset + 2)
+        .map(|s| u16::from_le_bytes([s[0], s[1]]))
+        .ok_or_else(|| "fichier tronqué".into())
 }
 
 fn u32_at(b: &[u8], offset: usize) -> Result<u32, String> {
@@ -43,7 +45,9 @@ pub fn parse(file: &[u8]) -> Result<Xma2File<'_>, String> {
     let (mut format, mut data, mut offset) = (None, None, 12);
     while offset + 8 <= file.len() {
         let size = u32_at(file, offset + 4)? as usize;
-        let body = file.get(offset + 8..offset + 8 + size).ok_or("bloc RIFF tronqué")?;
+        let body = file
+            .get(offset + 8..offset + 8 + size)
+            .ok_or("bloc RIFF tronqué")?;
         match &file[offset..offset + 4] {
             b"fmt " => {
                 let tag = u16_at(body, 0)?;
@@ -51,22 +55,30 @@ pub fn parse(file: &[u8]) -> Result<Xma2File<'_>, String> {
                     return Err(format!("format 0x{tag:04X}, XMA2 (0x0166) attendu"));
                 }
                 // WAVEFORMATEX (18 octets), puis NumStreams.
-                format = Some(Xma2Format { channels: u16_at(body, 2)?, sample_rate: u32_at(body, 4)?,
-                                           streams: u16_at(body, 18)? });
+                format = Some(Xma2Format {
+                    channels: u16_at(body, 2)?,
+                    sample_rate: u32_at(body, 4)?,
+                    streams: u16_at(body, 18)?,
+                });
             }
             b"data" => data = Some(body),
             _ => {}
         }
         offset += 8 + size + (size & 1);
     }
-    Ok(Xma2File { format: format.ok_or("bloc fmt absent")?, data: data.ok_or("bloc data absent")? })
+    Ok(Xma2File {
+        format: format.ok_or("bloc fmt absent")?,
+        data: data.ok_or("bloc data absent")?,
+    })
 }
 
 /// Décode des paquets XMA2 de 2 Kio en échantillons PCM 16 bits entrelacés.
 pub fn decode(format: Xma2Format, data: &[u8]) -> Result<Vec<i16>, String> {
     if format.streams != 1 {
-        return Err(format!("{} flux XMA2 : seuls les fichiers à un flux (1 ou 2 canaux) sont pris en charge",
-                           format.streams));
+        return Err(format!(
+            "{} flux XMA2 : seuls les fichiers à un flux (1 ou 2 canaux) sont pris en charge",
+            format.streams
+        ));
     }
     let mut stream = xma::Xma2Stream::new(format.sample_rate, format.channels as usize)
         .map_err(|error| format!("configuration XMA2 refusée : {error:?}"))?;
@@ -127,7 +139,14 @@ mod tests {
     fn parses_the_xma2_header() {
         let file = xma2_riff(2, 48_000, 1, &[0; PACKET_BYTES]);
         let parsed = parse(&file).unwrap();
-        assert_eq!(parsed.format, Xma2Format { channels: 2, sample_rate: 48_000, streams: 1 });
+        assert_eq!(
+            parsed.format,
+            Xma2Format {
+                channels: 2,
+                sample_rate: 48_000,
+                streams: 1
+            }
+        );
         assert_eq!(parsed.data.len(), PACKET_BYTES);
     }
 
@@ -137,13 +156,21 @@ mod tests {
         pcm[20..22].copy_from_slice(&1u16.to_le_bytes()); // format PCM
         assert!(parse(&pcm).unwrap_err().contains("0x0001"));
         assert!(parse(b"nope").is_err());
-        let format = Xma2Format { channels: 6, sample_rate: 48_000, streams: 3 };
+        let format = Xma2Format {
+            channels: 6,
+            sample_rate: 48_000,
+            streams: 3,
+        };
         assert!(decode(format, &[]).unwrap_err().contains("3 flux"));
     }
 
     #[test]
     fn garbage_packets_decode_without_crash() {
-        let format = Xma2Format { channels: 1, sample_rate: 44_100, streams: 1 };
+        let format = Xma2Format {
+            channels: 1,
+            sample_rate: 44_100,
+            streams: 1,
+        };
         let samples = decode(format, &[0xA5; PACKET_BYTES * 2]).unwrap();
         assert!(samples.len().is_multiple_of(format.channels as usize));
     }

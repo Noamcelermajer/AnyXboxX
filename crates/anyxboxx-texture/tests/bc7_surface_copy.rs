@@ -2,7 +2,15 @@ use anyxboxx_texture::{bc7, decode_surface};
 
 #[test]
 fn surface_rows_preserve_crops_and_block_order() {
-    for (width, height) in [(0usize, 5usize), (5, 0), (1, 1), (3, 5), (4, 4), (7, 11), (16, 9)] {
+    for (width, height) in [
+        (0usize, 5usize),
+        (5, 0),
+        (1, 1),
+        (3, 5),
+        (4, 4),
+        (7, 11),
+        (16, 9),
+    ] {
         let columns = width.div_ceil(4);
         let rows = height.div_ceil(4);
         let blocks: Vec<u8> = (0..columns * rows)
@@ -21,7 +29,11 @@ fn surface_rows_preserve_crops_and_block_order() {
                 <[u8; 4]>::try_from(&block[pixel..pixel + 4]).unwrap()
             })
             .collect();
-        assert_eq!(decode_surface(&blocks, width, height).unwrap(), expected, "{width}×{height}");
+        assert_eq!(
+            decode_surface(&blocks, width, height).unwrap(),
+            expected,
+            "{width}×{height}"
+        );
     }
     assert!(decode_surface(&[0; 15], 4, 4).is_err());
     assert!(decode_surface(&[0; 1], 0, 4).is_err());

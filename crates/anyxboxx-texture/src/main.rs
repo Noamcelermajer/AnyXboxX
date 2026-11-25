@@ -6,7 +6,8 @@ use std::process::ExitCode;
 
 use anyxboxx_texture::{decode_surface, png, tiles};
 
-const USAGE: &str = "Usage : anyxboxx_texture bc7 <blocs.bin> <largeur> <hauteur> <sortie.png> [--4k-s]";
+const USAGE: &str =
+    "Usage : anyxboxx_texture bc7 <blocs.bin> <largeur> <hauteur> <sortie.png> [--4k-s]";
 
 fn run(args: &[String]) -> Result<String, String> {
     let [command, input, width, height, output, options @ ..] = args else {
@@ -17,7 +18,8 @@ fn run(args: &[String]) -> Result<String, String> {
     }
     let width: usize = width.parse().map_err(|_| "largeur invalide")?;
     let height: usize = height.parse().map_err(|_| "hauteur invalide")?;
-    let mut blocks = std::fs::read(input).map_err(|error| format!("lecture de {input} : {error}"))?;
+    let mut blocks =
+        std::fs::read(input).map_err(|error| format!("lecture de {input} : {error}"))?;
     if options.iter().any(|option| option == "--4k-s") {
         blocks = tiles::linearize_4k_s(&blocks, width, height)?;
     }

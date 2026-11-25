@@ -16,8 +16,10 @@ fn run(args: &[String]) -> Result<String, String> {
     let wav = anyxboxx_audio::wav(parsed.format.channels, parsed.format.sample_rate, &samples);
     std::fs::write(output, wav).map_err(|error| format!("écriture de {output} : {error}"))?;
     let frames = samples.len() / parsed.format.channels.max(1) as usize;
-    Ok(format!("{output} : {frames} échantillons par canal, {} canal(aux), {} Hz", parsed.format.channels,
-               parsed.format.sample_rate))
+    Ok(format!(
+        "{output} : {frames} échantillons par canal, {} canal(aux), {} Hz",
+        parsed.format.channels, parsed.format.sample_rate
+    ))
 }
 
 fn main() -> ExitCode {

@@ -14,17 +14,28 @@ fn hex(bytes: &[u8]) -> String {
 }
 
 fn block(fields: &[(u128, u32)]) -> Vec<u8> {
-    fields.iter().map(|&(value, offset)| value << offset).sum::<u128>().to_le_bytes().to_vec()
+    fields
+        .iter()
+        .map(|&(value, offset)| value << offset)
+        .sum::<u128>()
+        .to_le_bytes()
+        .to_vec()
 }
 
 fn texels(data: &[u8]) -> Vec<[u8; 4]> {
-    data.as_chunks::<4>().0.iter().map(|c| [c[0], c[1], c[2], c[3]]).collect()
+    data.as_chunks::<4>()
+        .0
+        .iter()
+        .map(|c| [c[0], c[1], c[2], c[3]])
+        .collect()
 }
 
 fn random_block(mode: usize, case: usize) -> Vec<u8> {
     let digest = Sha256::digest(format!("random {mode} {case}").as_bytes());
     let bits = u128::from_le_bytes(digest[..16].try_into().unwrap());
-    (bits >> (mode + 1) << (mode + 1) | 1 << mode).to_le_bytes().to_vec()
+    (bits >> (mode + 1) << (mode + 1) | 1 << mode)
+        .to_le_bytes()
+        .to_vec()
 }
 
 fn fixture_fields(mode: usize, case: usize) -> Fields {
@@ -35,8 +46,11 @@ fn fixture_fields(mode: usize, case: usize) -> Fields {
         let digest = Sha256::digest(format!("bc7 fixture {mode} {case} {name}").as_bytes());
         fields.insert(name, digest[0] as u32 & ((1 << width) - 1));
     }
-    for (name, value) in [("partition", partition as u32), ("rotation", case as u32 & 3),
-                          ("index_selection", case as u32 >> 2 & 1)] {
+    for (name, value) in [
+        ("partition", partition as u32),
+        ("rotation", case as u32 & 3),
+        ("index_selection", case as u32 >> 2 & 1),
+    ] {
         if let Some(slot) = fields.get_mut(name) {
             *slot = value;
         }
@@ -47,14 +61,73 @@ fn fixture_fields(mode: usize, case: usize) -> Fields {
 #[test]
 fn field_offsets_match_the_published_layouts() {
     let expected: [&[(&str, u32)]; 8] = [
-        &[("partition", 1), ("r0", 5), ("g0", 29), ("b0", 53), ("p0", 77), ("index0", 83)],
-        &[("partition", 2), ("r0", 8), ("g0", 32), ("b0", 56), ("p0", 80), ("index0", 82)],
-        &[("partition", 3), ("r0", 9), ("g0", 39), ("b0", 69), ("index0", 99)],
-        &[("partition", 4), ("r0", 10), ("g0", 38), ("b0", 66), ("p0", 94), ("index0", 98)],
-        &[("rotation", 5), ("index_selection", 7), ("r0", 8), ("g0", 18), ("b0", 28), ("a0", 38), ("index0", 50), ("index2_0", 81)],
-        &[("rotation", 6), ("r0", 8), ("g0", 22), ("b0", 36), ("a0", 50), ("index0", 66), ("index2_0", 97)],
-        &[("r0", 7), ("g0", 21), ("b0", 35), ("a0", 49), ("p0", 63), ("index0", 65)],
-        &[("partition", 8), ("r0", 14), ("g0", 34), ("b0", 54), ("a0", 74), ("p0", 94), ("index0", 98)],
+        &[
+            ("partition", 1),
+            ("r0", 5),
+            ("g0", 29),
+            ("b0", 53),
+            ("p0", 77),
+            ("index0", 83),
+        ],
+        &[
+            ("partition", 2),
+            ("r0", 8),
+            ("g0", 32),
+            ("b0", 56),
+            ("p0", 80),
+            ("index0", 82),
+        ],
+        &[
+            ("partition", 3),
+            ("r0", 9),
+            ("g0", 39),
+            ("b0", 69),
+            ("index0", 99),
+        ],
+        &[
+            ("partition", 4),
+            ("r0", 10),
+            ("g0", 38),
+            ("b0", 66),
+            ("p0", 94),
+            ("index0", 98),
+        ],
+        &[
+            ("rotation", 5),
+            ("index_selection", 7),
+            ("r0", 8),
+            ("g0", 18),
+            ("b0", 28),
+            ("a0", 38),
+            ("index0", 50),
+            ("index2_0", 81),
+        ],
+        &[
+            ("rotation", 6),
+            ("r0", 8),
+            ("g0", 22),
+            ("b0", 36),
+            ("a0", 50),
+            ("index0", 66),
+            ("index2_0", 97),
+        ],
+        &[
+            ("r0", 7),
+            ("g0", 21),
+            ("b0", 35),
+            ("a0", 49),
+            ("p0", 63),
+            ("index0", 65),
+        ],
+        &[
+            ("partition", 8),
+            ("r0", 14),
+            ("g0", 34),
+            ("b0", 54),
+            ("a0", 74),
+            ("p0", 94),
+            ("index0", 98),
+        ],
     ];
     for (mode, offsets) in expected.iter().enumerate() {
         for partition in 0..1 << MODES[mode].partition_bits {
@@ -62,7 +135,10 @@ fn field_offsets_match_the_published_layouts() {
             assert_eq!(spans.iter().map(|(_, _, w)| w).sum::<u32>(), 128);
             for (name, offset) in offsets.iter() {
                 let found = spans.iter().find(|(n, _, _)| n == name).unwrap();
-                assert_eq!(found.1, *offset, "mode {mode} partition {partition} champ {name}");
+                assert_eq!(
+                    found.1, *offset,
+                    "mode {mode} partition {partition} champ {name}"
+                );
             }
         }
     }
@@ -78,16 +154,36 @@ fn hand_derived_blocks() {
     assert_eq!(texels(&bc7::decode(&data).unwrap()), expected);
     // Mode 5 : rouge de 255 à 0, alpha de 64 à 192 ; la rotation 1 échange rouge et alpha.
     let fields = [(1, 5), (127, 8), (64, 50), (192, 58), (3, 67), (1, 100)];
-    assert_eq!(texels(&bc7::decode(&block(&fields)).unwrap())[..4],
-               [[255, 0, 0, 64], [0, 0, 0, 64], [255, 0, 0, 106], [255, 0, 0, 64]]);
+    assert_eq!(
+        texels(&bc7::decode(&block(&fields)).unwrap())[..4],
+        [
+            [255, 0, 0, 64],
+            [0, 0, 0, 64],
+            [255, 0, 0, 106],
+            [255, 0, 0, 64]
+        ]
+    );
     let rotated = [&fields[..], &[(1, 6)]].concat();
-    assert_eq!(texels(&bc7::decode(&block(&rotated)).unwrap())[..4],
-               [[64, 0, 0, 255], [64, 0, 0, 0], [106, 0, 0, 255], [64, 0, 0, 255]]);
+    assert_eq!(
+        texels(&bc7::decode(&block(&rotated)).unwrap())[..4],
+        [
+            [64, 0, 0, 255],
+            [64, 0, 0, 0],
+            [106, 0, 0, 255],
+            [64, 0, 0, 255]
+        ]
+    );
     // Mode 4 : la sélection d'index échange les index de couleur et d'alpha.
     let fields = [(1, 4), (31, 8), (63, 44), (1, 51), (7, 83)];
-    assert_eq!(texels(&bc7::decode(&block(&fields)).unwrap())[..2], [[255, 0, 0, 0], [171, 0, 0, 255]]);
+    assert_eq!(
+        texels(&bc7::decode(&block(&fields)).unwrap())[..2],
+        [[255, 0, 0, 0], [171, 0, 0, 255]]
+    );
     let selected = [&fields[..], &[(1, 7)]].concat();
-    assert_eq!(texels(&bc7::decode(&block(&selected)).unwrap())[..2], [[255, 0, 0, 0], [0, 0, 0, 84]]);
+    assert_eq!(
+        texels(&bc7::decode(&block(&selected)).unwrap())[..2],
+        [[255, 0, 0, 0], [0, 0, 0, 84]]
+    );
     assert_eq!(bc7::decode(&[0; 16]).unwrap(), [0; 64]);
 }
 
@@ -118,10 +214,17 @@ fn fixture_reproduces_xbox2windows_digests() {
 #[test]
 fn sw_4k_s_detiling_follows_the_bit_order() {
     // Une tuile dont le bloc n porte la valeur n : la position (x, y) lit le bloc y0 y1 x0 x1 y2 x2 y3 x3.
-    let tile: Vec<u8> = (0..256u32).flat_map(|n| [n.to_le_bytes(), [0; 4], [0; 4], [0; 4]].concat()).collect();
+    let tile: Vec<u8> = (0..256u32)
+        .flat_map(|n| [n.to_le_bytes(), [0; 4], [0; 4], [0; 4]].concat())
+        .collect();
     let linear = tiles::linearize_4k_s(&tile, 64, 64).unwrap();
-    let at = |x: usize, y: usize| u32::from_le_bytes(linear[(y * 16 + x) * 16..][..4].try_into().unwrap());
-    assert_eq!((at(0, 0), at(1, 0), at(0, 1), at(4, 0), at(0, 4), at(15, 15)), (0, 4, 1, 32, 16, 255));
+    let at = |x: usize, y: usize| {
+        u32::from_le_bytes(linear[(y * 16 + x) * 16..][..4].try_into().unwrap())
+    };
+    assert_eq!(
+        (at(0, 0), at(1, 0), at(0, 1), at(4, 0), at(0, 4), at(15, 15)),
+        (0, 4, 1, 32, 16, 255)
+    );
     assert!(tiles::linearize_4k_s(&tile[..4000], 64, 64).is_err());
     let tail = tiles::linearize_4k_s_tail(&tile, 4, 4, 7).unwrap(); // niveau 7 en (0, 0)
     assert_eq!(u32::from_le_bytes(tail[..4].try_into().unwrap()), 0);
