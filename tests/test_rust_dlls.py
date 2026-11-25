@@ -22,6 +22,7 @@ RUST_RELEASE = REPO / "target" / "release"
 PORTED = {
     "XCRDAPI.dll": ("xcrdapi.dll", ["tests/test_xcrdapi.py"]),
     "kernelx.dll": ("kernelx.dll", ["tests/test_kernelx.py"]),
+    "d3d12_xs.dll": ("d3d12_xs.dll", ["tests/test_d3d12_virtual_memory.py", "tests/test_runtime_cpp.py"]),
 }
 pytestmark = pytest.mark.skipif(sys.platform != "win32", reason="Windows DLLs")
 

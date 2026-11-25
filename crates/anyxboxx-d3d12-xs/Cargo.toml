@@ -1,0 +1,20 @@
+[package]
+name = "anyxboxx-d3d12-xs"
+description = "d3d12_xs.dll in Rust: root-signature functions forwarded to the PC's d3d12.dll, D3D12ConfigureVirtualMemoryX. Port of runtime/d3d12_xs (C++), same exports."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+build = "build.rs"
+
+[lib]
+name = "d3d12_xs"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[lints]
+workspace = true
+
+[build-dependencies]
+anyxboxx-forwarders = { path = "../anyxboxx-forwarders" }

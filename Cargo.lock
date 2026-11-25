@@ -92,10 +92,24 @@ dependencies = [
 ]
 
 [[package]]
-name = "anyxboxx-kernelx"
+name = "anyxboxx-d3d12-xs"
+version = "0.1.0"
+dependencies = [
+ "anyxboxx-forwarders",
+]
+
+[[package]]
+name = "anyxboxx-forwarders"
 version = "0.1.0"
 dependencies = [
  "cc",
+]
+
+[[package]]
+name = "anyxboxx-kernelx"
+version = "0.1.0"
+dependencies = [
+ "anyxboxx-forwarders",
 ]
 
 [[package]]

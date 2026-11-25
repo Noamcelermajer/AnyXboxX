@@ -17,5 +17,5 @@ crate-type = ["cdylib", "rlib"]
 workspace = true
 
 [build-dependencies]
-# Finds MSVC's lib.exe for the forwarder export table (MIT OR Apache-2.0).
-cc = "1.2"
+
+anyxboxx-forwarders = { path = "../anyxboxx-forwarders" }

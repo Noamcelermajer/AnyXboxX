@@ -1,0 +1,15 @@
+[package]
+name = "anyxboxx-forwarders"
+description = "Build-script helper: links PE export forwarders (Name=dll.Name) into a Rust cdylib, for the runtime DLLs ported from C++."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+# Finds MSVC's lib.exe (MIT OR Apache-2.0).
+cc = "1.2"
+
+[lints]
+workspace = true
