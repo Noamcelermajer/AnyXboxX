@@ -106,3 +106,47 @@ jobs:
       - run: python -m pip install -r requirements.txt -r requirements-dev.txt
       - name: pytest (suite complète, nombre de tests comparé aux README)
         run: python -m pytest
+
+  victory:
+    name: victory
+    needs: lint
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: third_party/victory
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Rust toolchain (third_party/victory/rust-toolchain.toml)
+        run: rustup toolchain install
+      - name: Cache Rust (third_party/victory)
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: third_party/victory -> target
+          cache-on-failure: true
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - name: Build victory (diag profile, diagnostics feature)
+        run: cargo build --profile diag -p victory --features diagnostics
+      - name: Test victory-gpu (diagnostics, WARP)
+        run: cargo test -p victory-gpu --features diagnostics
+      - name: Test victory-hle (with victory-gpu/diagnostics)
+        run: cargo test -p victory-hle --features victory-gpu/diagnostics
+      - name: Test core, pe, formats, loader, pipeline, game
+        run: cargo test -p victory-core -p victory-pe -p victory-formats -p victory-loader -p victory-pipeline -p victory-game
+      # Expected to fail on main until the victory-gpu no-diagnostics fix is merged
+      # (noted in PR #216; fix PR pending): draw.rs calls crate::queue::presented(),
+      # which is gated behind #[cfg(feature = "diagnostics")]. Remove continue-on-error
+      # (and drop --features victory-gpu/diagnostics on victory-hle above) once fixed.
+      - name: Check victory-gpu without diagnostics (expected to fail on main)
+        continue-on-error: true
+        run: |
+          cargo check -p victory-gpu
+          cargo check -p victory-gpu --tests
+      # Expected to fail on Windows on main until the victory-shader test fix PR is
+      # merged: valu_tests.rs:2030 and wave64_tests.rs:483 pass Vec<([u32; 4], bool)>
+      # where Vec<[u32; 4]> is expected. Remove continue-on-error once fixed.
+      - name: Test victory-shader (expected to fail on main)
+        continue-on-error: true
+        run: cargo test -p victory-shader
