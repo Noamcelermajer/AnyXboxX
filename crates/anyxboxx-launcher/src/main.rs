@@ -1,4 +1,4 @@
-mod format;
-mod verify;
+mod host;
+mod setup;
 
 fn main() {}
