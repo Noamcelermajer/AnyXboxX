@@ -92,6 +92,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyxboxx-kernelx"
+version = "0.1.0"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "anyxboxx-pe"
 version = "0.1.0"
 dependencies = [

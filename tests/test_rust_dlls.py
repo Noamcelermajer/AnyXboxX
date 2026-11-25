@@ -11,6 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pefile
 import pytest
 
 from conftest import RUNTIME_DIR, runtime_built
@@ -20,6 +21,7 @@ RUST_RELEASE = REPO / "target" / "release"
 # DLL name in the runtime folder → (Rust cdylib in target/release, pytest files of the C++ DLL).
 PORTED = {
     "XCRDAPI.dll": ("xcrdapi.dll", ["tests/test_xcrdapi.py"]),
+    "kernelx.dll": ("kernelx.dll", ["tests/test_kernelx.py"]),
 }
 pytestmark = pytest.mark.skipif(sys.platform != "win32", reason="Windows DLLs")
 
@@ -47,3 +49,20 @@ def test_cpp_tests_pass_against_the_rust_dll(tmp_path, name):
     assert done.returncode == 0, done.stdout[-4000:]
     passed = re.search(r"(\d+) passed", summary)
     assert passed and int(passed.group(1)) > 0 and "skipped" not in summary, summary
+
+
+def exports(path):
+    image = pefile.PE(str(path), fast_load=True)
+    image.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_EXPORT"]])
+    directory = getattr(image, "DIRECTORY_ENTRY_EXPORT", None)
+    return {(s.name, s.forwarder) for s in directory.symbols} if directory else set()
+
+
+@pytest.mark.parametrize("name", sorted(PORTED))
+def test_rust_dll_exports_what_the_cpp_dll_exports(name):
+    rust = RUST_RELEASE / PORTED[name][0]
+    if not rust.is_file() or not (RUNTIME_DIR / name).is_file():
+        if os.environ.get("ANYXBOXX_REQUIRE_RUNTIME") == "1":
+            pytest.fail(f"absent: {rust} or {RUNTIME_DIR / name}")
+        pytest.skip("Rust DLL or C++ runtime not built")
+    assert exports(rust) == exports(RUNTIME_DIR / name)

@@ -1,0 +1,21 @@
+[package]
+name = "anyxboxx-kernelx"
+description = "kernelx.dll in Rust: the console kernel forwarded to the PC's kernel32/kernelbase. Port of runtime/kernelx (C++), same exports."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+build = "build.rs"
+
+[lib]
+name = "kernelx"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[lints]
+workspace = true
+
+[build-dependencies]
+# Finds MSVC's lib.exe for the forwarder export table (MIT OR Apache-2.0).
+cc = "1.2"
