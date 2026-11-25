@@ -3,7 +3,6 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
-use super::settings::TUNED;
 use super::*;
 
 #[derive(Parser)]

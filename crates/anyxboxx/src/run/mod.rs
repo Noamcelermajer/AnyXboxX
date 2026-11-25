@@ -3,17 +3,14 @@
 //! checks, same build command, same environment, same precompile step, same exit code.
 
 mod settings;
+mod steps;
 
-use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
-use std::process::Command;
 
 use clap::{Args, ValueEnum};
 
-pub const GAME_EXE: &str = "game_scarlett_master.exe";
-/// The game's two DLLs translated with its shaders by `--precompile`.
-pub const PRECOMPILED_DLLS: [&str; 2] = ["XboxBvhBuilder.dll", "amd_fidelityfx_upscaler_xbox.dll"];
-const SHADERS: &str = "shaders.rpf";
+pub use settings::TUNED;
+pub use steps::{Env, GAME_EXE, PRECOMPILED_DLLS, SHADERS, Victory, environment, game_exe, status};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum XgMode {
@@ -24,7 +21,7 @@ pub enum XgMode {
 }
 
 impl XgMode {
-    fn as_str(self) -> &'static str {
+    pub fn as_str(self) -> &'static str {
         match self {
             XgMode::Real => "real",
             XgMode::Compare => "compare",
@@ -83,110 +80,27 @@ pub enum RunError {
     Spawn(String, std::io::Error),
 }
 
-/// Runs the launch; returns VIctory's exit code.
+/// Runs the launch like the script, step for step; returns VIctory's exit code.
 pub fn run(args: &RunArgs, repo: &Path) -> Result<i32, RunError> {
-    let victory = repo.join("third_party").join("victory");
-    let manifest = victory.join("Cargo.toml");
-    if !manifest.is_file() {
-        return Err(RunError::NoVictory);
-    }
-    let game_exe = args.game_dir.join(GAME_EXE);
-    if !game_exe.exists() {
-        return Err(RunError::NoGame(args.game_dir.display().to_string()));
-    }
-    // VIctory is its own Cargo workspace: its target folder is third_party\victory\target
-    // unless CARGO_TARGET_DIR is set.
-    let target =
-        std::env::var_os("CARGO_TARGET_DIR").map_or_else(|| victory.join("target"), PathBuf::from);
-    let exe = target.join("diag").join("victory.exe");
-
-    // Always ask cargo: it does nothing when victory.exe is current, and rebuilds it after a
-    // pull that changes third_party/victory (an old victory.exe would ignore new settings).
+    let victory = Victory::locate(repo)?;
+    game_exe(&args.game_dir)?;
     println!("Building VIctory (diag profile, diagnostics feature)...");
-    let build = [
-        "build",
-        "--profile",
-        "diag",
-        "-p",
-        "victory",
-        "--features",
-        "diagnostics",
-        "--manifest-path",
-    ];
-    let code = status(Command::new("cargo").args(build).arg(&manifest), "cargo")?;
+    let code = status(&mut victory.build_command(), "cargo")?;
     if code != 0 {
         return Err(RunError::BuildFailed(code));
     }
-
     let env = environment(args)?;
     if args.precompile {
-        precompile(&exe, &args.game_dir, &game_exe, &env)?;
-    }
-    status(
-        Command::new(&exe)
-            .arg("run")
-            .arg(&game_exe)
-            .arg("--execute")
-            .envs(pairs(&env)),
-        "victory",
-    )
-}
-
-/// The game's environment, checked like the script (the XG library must exist).
-fn environment(args: &RunArgs) -> Result<Vec<(String, OsString)>, RunError> {
-    let mut env = settings::base(args);
-    if let Some(dll) = args.xg_dll.as_deref().filter(|p| !p.as_os_str().is_empty()) {
-        if !dll.is_file() {
-            return Err(RunError::NoXgDll(dll.display().to_string()));
-        }
-        let absolute =
-            std::path::absolute(dll).map_err(|e| RunError::Spawn(dll.display().to_string(), e))?;
-        env.extend(settings::xg(&absolute, args.xg_mode.as_str()));
-    }
-    Ok(env)
-}
-
-/// Same environment as the game: the cache key depends on it.
-fn precompile(
-    exe: &Path,
-    game_dir: &Path,
-    game_exe: &Path,
-    env: &[(String, OsString)],
-) -> Result<(), RunError> {
-    let shaders = game_dir.join(SHADERS);
-    let dlls: Vec<PathBuf> = PRECOMPILED_DLLS.iter().map(|d| game_dir.join(d)).collect();
-    for needed in std::iter::once(&shaders).chain(&dlls) {
-        if !needed.is_file() {
-            return Err(RunError::PrecompileInput(needed.display().to_string()));
+        let mut translate = victory.translate_command(&args.game_dir, &env)?;
+        println!(
+            "Precompiling shaders and pipelines into the cache (several minutes the first time)..."
+        );
+        match status(&mut translate, "victory")? {
+            0 => {}
+            code => return Err(RunError::TranslateFailed(code)),
         }
     }
-    println!(
-        "Precompiling shaders and pipelines into the cache (several minutes the first time)..."
-    );
-    let mut command = Command::new(exe);
-    command.args(["translate", "--cache", "--pipelines", "--used-pipelines"]);
-    command
-        .arg(&shaders)
-        .arg(game_exe)
-        .args(&dlls)
-        .envs(pairs(env));
-    match status(&mut command, "victory")? {
-        0 => Ok(()),
-        code => Err(RunError::TranslateFailed(code)),
-    }
-}
-
-fn pairs(env: &[(String, OsString)]) -> impl Iterator<Item = (&OsStr, &OsStr)> {
-    env.iter()
-        .map(|(k, v)| (OsStr::new(k.as_str()), v.as_os_str()))
-}
-
-/// Waits for the command; a process killed without exit code counts as 1, like PowerShell.
-fn status(command: &mut Command, name: &str) -> Result<i32, RunError> {
-    let status = command
-        .status()
-        .map_err(|e| RunError::Spawn(name.to_string(), e))?;
-    Ok(status.code().unwrap_or(1))
+    status(&mut victory.game_command(&args.game_dir, &env), "victory")
 }
 
 /// Repository root: `--repo`, `ANYXBOXX_REPO`, then the first folder above the binary or the

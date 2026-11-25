@@ -2,7 +2,7 @@
 //!
 //! `anyxboxx run --game-dir <folder> [...]` replaces `tools/lancer_victory.ps1`.
 
-mod run;
+use anyxboxx::run;
 
 use std::process::ExitCode;
 

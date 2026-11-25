@@ -7,6 +7,10 @@ rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
 
+[lib]
+name = "anyxboxx"
+path = "src/lib.rs"
+
 [[bin]]
 name = "anyxboxx"
 path = "src/main.rs"
