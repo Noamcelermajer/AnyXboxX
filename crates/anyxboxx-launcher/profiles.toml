@@ -1,0 +1,138 @@
+# Launch profiles of the graphical launcher, embedded in the binary (include_str!).
+#
+# Each [[profile]] applies to a host (os: "windows", "linux" = Proton or Wine, or "any") and a GPU
+# vendor (gpu: "nvidia", "amd", "intel", "any"). The most specific match wins: a profile naming both
+# fields beats one naming one, which beats the "any" fallback; a tie goes to the first one listed.
+#
+# status:
+#   "measured"   values measured by the maintainer or a contributor on the stated setup (see note);
+#   "unmeasured" VIctory's own defaults, nothing measured with this profile.
+# pending: keys whose values are waiting for the maintainer's confirmation on Windows. They are
+#   listed in the launcher so nobody mistakes them for measured settings.
+# Overrides typed in the launcher's advanced panel always win over [profile.env].
+#
+# Every variable named here is read by third_party/victory (checked on 2026-11-25). Values "0"
+# turn the switch off, as VIctory reads them: `is_none_or(|v| v != "0")` for the PR #199 switches.
+
+# ---------------------------------------------------------------------------------------------
+# Windows + NVIDIA: the maintainer's working set (VICTORY_SHADER_LOOP_LIMIT and the five others
+# equal anyxboxx::run::TUNED, which tools/lancer_victory.ps1 also sets).
+#
+# PENDING CONFIRMATION (maintainer): the PR #199 switches below are set to "0" (off) in this
+# profile, as requested for this launcher; they are not yet confirmed on Windows. Remove them from
+# `pending` once confirmed, and change their values only with the maintainer's agreement.
+# ---------------------------------------------------------------------------------------------
+[[profile]]
+id = "windows-nvidia"
+name = "Windows + NVIDIA (maintainer's working set)"
+os = "windows"
+gpu = "nvidia"
+status = "measured"
+note = "TUNED settings measured on 2026-11-24 (RTX 4070 Super); PR #199 switches off, pending confirmation."
+pending = [
+    "VICTORY_SHADER_OPT",
+    "VICTORY_PS_HALVES",
+    "VICTORY_L6_HEAP_CLAMP",
+    "VICTORY_L6_NAN_GUARD",
+    "VICTORY_L6_NULL_LIBRARY",
+    "VICTORY_L6_PLACED_UAV",
+    "VICTORY_L6_PLANE_PASS",
+    "VICTORY_L6_PSV_INTERP",
+    "VICTORY_L9_DSTORAGE_GUARDS",
+    "VICTORY_L9_GUARD_TITLE_VIEWS",
+    "VICTORY_TEXTURE_SWEEP",
+    "VICTORY_TEXTURE_GATE_S",
+    "VICTORY_PIPELINE_GATE_S",
+]
+
+[profile.env]
+# Translated shader loops stop after 256 iterations.
+VICTORY_SHADER_LOOP_LIMIT = "256"
+# Host pipeline wait setting from the fork's pull request #1.
+VICTORY_LATE_WAIT = "3"
+# Wide back-end option of the fork.
+VICTORY_WIDE_BACK = "1"
+# Card buffer sizing: minimum and total, in MB.
+VICTORY_CARD_BUFFERS_MIN_MB = "1"
+VICTORY_CARD_BUFFERS_MB = "1024"
+# DirectStorage writes are reported to the GPU side (fork commits e49864a and bf870de).
+VICTORY_DSTORAGE_NOTIFY = "1"
+# PENDING CONFIRMATION (maintainer), PR #199 switches: off in this profile.
+VICTORY_SHADER_OPT = "0"
+VICTORY_PS_HALVES = "0"
+VICTORY_L6_HEAP_CLAMP = "0"
+VICTORY_L6_NAN_GUARD = "0"
+VICTORY_L6_NULL_LIBRARY = "0"
+VICTORY_L6_PLACED_UAV = "0"
+VICTORY_L6_PLANE_PASS = "0"
+VICTORY_L6_PSV_INTERP = "0"
+VICTORY_L9_DSTORAGE_GUARDS = "0"
+VICTORY_L9_GUARD_TITLE_VIEWS = "0"
+VICTORY_TEXTURE_SWEEP = "0"
+VICTORY_TEXTURE_GATE_S = "0"
+VICTORY_PIPELINE_GATE_S = "0"
+
+# ---------------------------------------------------------------------------------------------
+# Linux (Proton) + AMD: the settings of PR #199's measured Linux run (Exorion1er, Fedora 44,
+# RX 9070 XT 16 GB, RADV through vkd3d-proton, GE-Proton11-12, about 3.7 fps on the title).
+# Deliberately not included: VICTORY_SKIP_PIPELINES (a list of nine shader hashes of that run,
+# for that build only: type it in the advanced panel if you want it) and VICTORY_L7_SKIP (needs
+# a local role table, VICTORY_L7_ROLES). VICTORY_DSTORAGE_NOTIFY is not in that run's list.
+# The PR #199 switches stay at VIctory's defaults (on) in this profile.
+# ---------------------------------------------------------------------------------------------
+[[profile]]
+id = "linux-amd"
+name = "Linux (Proton) + AMD"
+os = "linux"
+gpu = "amd"
+status = "measured"
+note = "PR #199 measured on Linux only (RADV, 16 GB card). Not measured on Windows with these commits."
+
+[profile.env]
+VICTORY_SHADER_LOOP_LIMIT = "256"
+# With late waits the device is lost on RADV (fork issue #184).
+VICTORY_LATE_WAIT = "0"
+VICTORY_WIDE_BACK = "0"
+# Host pipeline wait per frame, in milliseconds.
+VICTORY_PIPELINE_WAIT_MS = "50"
+# Texture budget for a 16 GB card.
+VICTORY_TEXTURE_BUDGET_MB = "8192"
+# Texture refreshes do not wait for title memory.
+VICTORY_TEXTURE_NO_WAIT = "1"
+VICTORY_CARD_BUFFERS_MIN_MB = "1"
+VICTORY_CARD_BUFFERS_MB = "1024"
+# The title asks for 1,245,184 views, more than vkd3d-proton's default cap.
+VKD3D_CONFIG = "descriptor_heap"
+
+# ---------------------------------------------------------------------------------------------
+# Fallbacks: VIctory's own defaults (empty set), nothing measured with these hosts.
+# ---------------------------------------------------------------------------------------------
+[[profile]]
+id = "windows-amd"
+name = "Windows + AMD"
+os = "windows"
+gpu = "amd"
+status = "unmeasured"
+note = "VIctory's defaults: no tuned settings have been measured on this host."
+
+[profile.env]
+
+[[profile]]
+id = "intel"
+name = "Intel GPU"
+os = "any"
+gpu = "intel"
+status = "unmeasured"
+note = "VIctory's defaults: no tuned settings have been measured on Intel."
+
+[profile.env]
+
+[[profile]]
+id = "other"
+name = "Other host or GPU"
+os = "any"
+gpu = "any"
+status = "unmeasured"
+note = "VIctory's defaults: nothing is set. Use the advanced panel to try settings yourself."
+
+[profile.env]

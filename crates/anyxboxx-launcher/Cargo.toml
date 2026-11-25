@@ -1,0 +1,33 @@
+[package]
+name = "anyxboxx-launcher"
+description = "AnyXboxX graphical launcher: checks the setup, verifies the game folder, preloads shaders and starts VIctory."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "anyxboxx-launcher"
+path = "src/main.rs"
+
+[dependencies]
+anyxboxx = { path = "../anyxboxx" }
+eframe = "0.34"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+sha2 = "0.10"
+thiserror.workspace = true
+toml = "1"
+windows = { version = "0.62", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Dxgi",
+    "Win32_Graphics_Dxgi_Common",
+    "Win32_System_LibraryLoader",
+] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[lints]
+workspace = true
