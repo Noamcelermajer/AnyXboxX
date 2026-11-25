@@ -1,0 +1,17 @@
+[package]
+name = "anyxboxx-xcrdapi"
+description = "XCRDAPI.dll in Rust: minimal DStorageGetFactory. Port of runtime/xcrdapi (C++), same export."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+# xcrdapi.dll: Windows loads it for XCRDAPI.dll (file names are case-insensitive).
+name = "xcrdapi"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[lints]
+workspace = true
