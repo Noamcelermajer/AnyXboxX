@@ -76,7 +76,7 @@ Profiles (`crates/anyxboxx-launcher/profiles.toml`, one test each):
 ## Checks on this branch (2026-11-25, Windows 11, Rust 1.98.1, Python 3.12)
 
 ```
-python -m pytest                       → 1176 passed, 9 skipped
+python -m pytest                       → 1217 passed, 9 skipped
 python -m ruff check --select W605,F,E9 PrototypeScarlett tests tools → All checks passed!
 cargo test --release --workspace       → 121 passed, 0 failed
 cargo clippy --release --workspace --all-targets → 0 warnings
