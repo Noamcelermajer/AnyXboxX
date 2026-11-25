@@ -18,6 +18,9 @@ path = "src/main.rs"
 [dependencies]
 clap.workspace = true
 thiserror.workspace = true
+anyxboxx-report.workspace = true
+victory-hle.workspace = true
+victory-pe.workspace = true
 
 [lints]
 workspace = true
